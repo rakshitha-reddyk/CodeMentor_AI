@@ -1,0 +1,84 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUser } from "@/hooks/useUser";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import Settings from "@/components/Settings";
+
+const SettingsPage = () => {
+  const navigate = useNavigate();
+  const { session, loading, signOut } = useAuth();
+  const { data: user } = useCurrentUser();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-6 py-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="mb-8"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+
+          <div className="max-w-md mx-auto mt-20 text-center">
+            <h1 className="text-3xl font-bold mb-4">Sign In Required</h1>
+            <p className="text-muted-foreground mb-8">
+              Please sign in to access settings.
+            </p>
+            <Button onClick={() => navigate("/dashboard")}>
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-8">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/dashboard")}
+          className="mb-8"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
+
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Settings</h1>
+          <Settings user={user} onLogout={handleLogout} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SettingsPage;

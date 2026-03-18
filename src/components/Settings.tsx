@@ -52,7 +52,12 @@ interface SecurityOption {
   danger: boolean;
 }
 
-const Settings: React.FC = () => {
+interface SettingsProps {
+  user?: any;
+  onLogout?: () => Promise<void>;
+}
+
+const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
   const [profile, setProfile] = useState<UserProfile>({
     name: "Alex Johnson",
     email: "alex@codementor.ai",
@@ -131,8 +136,8 @@ const Settings: React.FC = () => {
   const togglePreference = (id: string) => {
     setPreferences(
       preferences.map((pref) =>
-        pref.id === id ? { ...pref, enabled: !pref.enabled } : pref
-      )
+        pref.id === id ? { ...pref, enabled: !pref.enabled } : pref,
+      ),
     );
   };
 
@@ -197,7 +202,11 @@ const Settings: React.FC = () => {
                 <p className="text-sm text-muted-foreground mb-1">Username</p>
                 <p className="text-lg font-semibold">@{profile.username}</p>
               </div>
-              <Button variant="default" size="sm" className="rounded-lg gap-2 mt-4">
+              <Button
+                variant="default"
+                size="sm"
+                className="rounded-lg gap-2 mt-4"
+              >
                 <Edit2 className="w-4 h-4" />
                 Edit Profile
               </Button>
@@ -528,10 +537,7 @@ const Settings: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             Reset to Defaults
           </Button>
-          <Button
-            variant="destructive"
-            className="rounded-lg gap-2 flex-1"
-          >
+          <Button variant="destructive" className="rounded-lg gap-2 flex-1">
             <LogOut className="w-4 h-4" />
             Sign Out
           </Button>

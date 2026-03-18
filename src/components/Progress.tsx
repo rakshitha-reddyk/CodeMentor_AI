@@ -109,7 +109,7 @@ const heatmapData = Array.from({ length: 52 }, (_, weekIndex) =>
   Array.from({ length: 7 }, (_, dayIndex) => ({
     date: `${weekIndex}-${dayIndex}`,
     value: Math.floor(Math.random() * 5),
-  }))
+  })),
 );
 
 const skillsData: Skill[] = [
@@ -258,7 +258,11 @@ const statCards: StatCard[] = [
   },
 ];
 
-const Progress: React.FC = () => {
+interface ProgressProps {
+  progress?: any[];
+}
+
+const Progress: React.FC<ProgressProps> = ({ progress }) => {
   const [chartType, setChartType] = useState<"line" | "bar">("line");
 
   const getSkillColor = (level: number): string => {
@@ -283,7 +287,9 @@ const Progress: React.FC = () => {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
           Progress
         </h1>
-        <p className="text-muted-foreground mt-2">Track your learning journey</p>
+        <p className="text-muted-foreground mt-2">
+          Track your learning journey
+        </p>
       </div>
 
       {/* Section 1: Stats Cards */}
@@ -340,7 +346,10 @@ const Progress: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               {chartType === "line" ? (
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.1)"
+                  />
                   <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" />
                   <YAxis stroke="rgba(255,255,255,0.5)" />
                   <Tooltip
@@ -375,7 +384,10 @@ const Progress: React.FC = () => {
                 </LineChart>
               ) : (
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.1)"
+                  />
                   <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" />
                   <YAxis stroke="rgba(255,255,255,0.5)" />
                   <Tooltip
@@ -476,7 +488,7 @@ const Progress: React.FC = () => {
                   <div
                     key={day.date}
                     className={`w-3 h-3 rounded-sm transition-all hover:scale-125 cursor-pointer ${getHeatmapColor(
-                      day.value
+                      day.value,
                     )}`}
                     title={`${day.value} activities`}
                   />

@@ -75,6 +75,10 @@ interface SkillData {
   change: string;
 }
 
+interface AnalyticsProps {
+  analytics?: any;
+}
+
 // Mock data for different date ranges
 const getChartData = (range: DateRange): AnalyticsData[] => {
   const baseData: AnalyticsData[] = [
@@ -200,15 +204,15 @@ const heatmapData = Array.from({ length: 52 }, (_, weekIndex) =>
   Array.from({ length: 7 }, (_, dayIndex) => ({
     date: `${weekIndex}-${dayIndex}`,
     value: Math.floor(Math.random() * 5),
-  }))
+  })),
 );
 
-const Analytics: React.FC = () => {
+const Analytics: React.FC<AnalyticsProps> = ({ analytics }) => {
   const [chartType, setChartType] = useState<ChartType>("line");
   const [dateRange, setDateRange] = useState<DateRange>("7days");
-  const [activityChartType, setActivityChartType] = useState<"daily" | "weekly">(
-    "daily"
-  );
+  const [activityChartType, setActivityChartType] = useState<
+    "daily" | "weekly"
+  >("daily");
 
   const chartData = useMemo(() => getChartData(dateRange), [dateRange]);
 
@@ -392,10 +396,7 @@ const Analytics: React.FC = () => {
                       strokeDasharray="3 3"
                       stroke="rgba(255,255,255,0.1)"
                     />
-                    <XAxis
-                      dataKey="day"
-                      stroke="rgba(255,255,255,0.5)"
-                    />
+                    <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" />
                     <YAxis stroke="rgba(255,255,255,0.5)" />
                     <Tooltip
                       contentStyle={{
@@ -433,10 +434,7 @@ const Analytics: React.FC = () => {
                       strokeDasharray="3 3"
                       stroke="rgba(255,255,255,0.1)"
                     />
-                    <XAxis
-                      dataKey="day"
-                      stroke="rgba(255,255,255,0.5)"
-                    />
+                    <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" />
                     <YAxis stroke="rgba(255,255,255,0.5)" />
                     <Tooltip
                       contentStyle={{
@@ -456,10 +454,7 @@ const Analytics: React.FC = () => {
                       strokeDasharray="3 3"
                       stroke="rgba(255,255,255,0.1)"
                     />
-                    <XAxis
-                      dataKey="day"
-                      stroke="rgba(255,255,255,0.5)"
-                    />
+                    <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" />
                     <YAxis stroke="rgba(255,255,255,0.5)" />
                     <Tooltip
                       contentStyle={{
@@ -738,7 +733,7 @@ const Analytics: React.FC = () => {
                     <div
                       key={day.date}
                       className={`w-3 h-3 rounded-sm cursor-pointer transition-all hover:scale-150 ${getHeatmapColor(
-                        day.value
+                        day.value,
                       )}`}
                       title={`${day.value} sessions`}
                     />

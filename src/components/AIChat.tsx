@@ -15,6 +15,7 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from "lucide-react";
+import { getAIResponse } from "@/services/aiService";
 
 interface Message {
   id: string;
@@ -74,18 +75,21 @@ const AIChat = () => {
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + "px";
+      inputRef.current.style.height =
+        Math.min(inputRef.current.scrollHeight, 120) + "px";
     }
   }, [inputValue]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
+    const message = inputValue;
+
     // Add user message
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       role: "user",
-      content: inputValue,
+      content: message,
       timestamp: new Date(),
     };
 
@@ -93,17 +97,29 @@ const AIChat = () => {
     setInputValue("");
     setIsLoading(true);
 
-    // Simulate AI response with delay
-    setTimeout(() => {
+    try {
+      const aiText = await getAIResponse(message);
       const aiMessage: Message = {
         id: `msg-${Date.now() + 1}`,
         role: "assistant",
-        content: `I received your message: "${inputValue.substring(0, 50)}${inputValue.length > 50 ? "..." : ""}"\n\nThis is a demo response. In production, this would call the backend API to get real AI responses from CodeMentor AI.`,
+        content: aiText,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      console.error("Error getting AI response:", error);
+      const errorMessage: Message = {
+        id: `msg-${Date.now() + 1}`,
+        role: "assistant",
+        content: `Error: ${errorMsg}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleToolClick = (prompt: string) => {
@@ -147,7 +163,8 @@ const AIChat = () => {
                 Ask anything to CodeMentor AI
               </h3>
               <p className="text-muted-foreground text-center max-w-md mb-8">
-                Get help with code explanations, debugging, performance optimization, and more
+                Get help with code explanations, debugging, performance
+                optimization, and more
               </p>
               <div className="grid grid-cols-2 gap-3 w-full max-w-md">
                 {aiTools.map((tool) => {
@@ -225,8 +242,14 @@ const AIChat = () => {
               <div className="bg-surface-elevated border border-border/50 rounded-2xl rounded-bl-none px-4 py-3">
                 <div className="flex gap-1">
                   <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                    style={{ animationDelay: "0.4s" }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -291,7 +314,9 @@ const AIChat = () => {
                   className={`w-full p-4 rounded-xl border transition-all hover:shadow-lg group text-left ${tool.lightColor}`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className={`p-2 rounded-lg bg-gradient-to-br ${tool.color} bg-opacity-20`}>
+                    <div
+                      className={`p-2 rounded-lg bg-gradient-to-br ${tool.color} bg-opacity-20`}
+                    >
                       <IconComponent className="w-5 h-5" />
                     </div>
                     <div className="p-1 opacity-0 group-hover:opacity-100 transition-opacity">
