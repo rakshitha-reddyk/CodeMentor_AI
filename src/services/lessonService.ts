@@ -6,13 +6,39 @@ export type Lesson = Tables<"lessons">;
 export const lessonService = {
   // Get all lessons
   async getAllLessons() {
-    const { data, error } = await supabase
-      .from("lessons")
-      .select("*")
-      .order("created_at", { ascending: false });
+    console.log("🔍 lessonService.getAllLessons() called");
+    try {
+      const { data, error } = await supabase
+        .from("lessons")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        console.error("❌ Supabase error fetching lessons:", error);
+        throw new Error(`Supabase Error: ${error.message}`);
+      }
+
+      console.log(`✅ Fetched ${data?.length || 0} lessons`);
+      return data;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+
+      // Check for network/DNS errors
+      if (
+        errorMsg.includes("Failed to fetch") ||
+        errorMsg.includes("ERR_NAME_NOT_RESOLVED")
+      ) {
+        console.error("🌐 Network connectivity issue - cannot reach Supabase");
+        console.error(
+          "   Check: Internet connection, firewall, or DNS resolution",
+        );
+        throw new Error(
+          "Network error: Cannot reach Supabase. Check your internet connection.",
+        );
+      }
+
+      throw err;
+    }
   },
 
   // Get lessons by difficulty

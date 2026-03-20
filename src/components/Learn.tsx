@@ -20,16 +20,54 @@ import { useAllLessons } from "@/hooks/useLesson";
 import { useCurrentUser } from "@/hooks/useUser";
 import { useUserProgress } from "@/hooks/useProgress";
 
+// Mock lessons for offline/fallback display
+const MOCK_LESSONS: Lesson[] = [
+  {
+    id: 1,
+    title: "JavaScript Basics",
+    difficulty: "Beginner",
+    content:
+      "Learn the fundamentals of JavaScript including variables, data types, and basic operations.",
+    created_at: new Date().toISOString(),
+  } as Lesson,
+  {
+    id: 2,
+    title: "React Hooks - useState",
+    difficulty: "Intermediate",
+    content:
+      "Master the useState hook to manage component state in functional components.",
+    created_at: new Date().toISOString(),
+  } as Lesson,
+  {
+    id: 3,
+    title: "CSS Flexbox",
+    difficulty: "Intermediate",
+    content: "Master CSS Flexbox for creating flexible and responsive layouts.",
+    created_at: new Date().toISOString(),
+  } as Lesson,
+  {
+    id: 4,
+    title: "Functions in JavaScript",
+    difficulty: "Beginner",
+    content: "Learn how to create and use functions to organize your code.",
+    created_at: new Date().toISOString(),
+  } as Lesson,
+];
+
 interface LearnProps {
   lessons?: Lesson[] | undefined;
   progress?: any[] | undefined;
   isLoading?: boolean;
+  error?: Error | null;
+  refetch?: () => Promise<any>;
 }
 
 const Learn: React.FC<LearnProps> = ({
   lessons: propLessons,
   progress: propProgress,
   isLoading: propIsLoading,
+  error: propError,
+  refetch: propRefetch,
 }) => {
   const navigate = useNavigate();
 
@@ -38,12 +76,13 @@ const Learn: React.FC<LearnProps> = ({
   const {
     data: fetchedLessons,
     isLoading: fetchIsLoading,
-    refetch: refetchLessons,
+    refetch: defaultRefetch,
   } = useAllLessons();
   const { data: fetchedProgress } = useUserProgress(user?.id);
 
-  // Use props if provided, otherwise use fetched data
-  const lessons = propLessons || fetchedLessons || [];
+  // Use props if provided, otherwise use fetched data, fallback to mock lessons for offline
+  const lessons =
+    propLessons || fetchedLessons || (propError ? MOCK_LESSONS : []);
   const progress = propProgress || fetchedProgress || [];
   const isLoading =
     propIsLoading !== undefined ? propIsLoading : fetchIsLoading;
@@ -110,7 +149,8 @@ const Learn: React.FC<LearnProps> = ({
     return inProgress || lessons[0];
   }, [lessons, progress]);
 
-  if (isLoading) {
+  if (isLoading && !propError) {
+    // Show loading spinner for max 2 seconds, then show mock lessons
     return (
       <div className="flex justify-center items-center py-20">
         <div className="text-center">
@@ -121,8 +161,73 @@ const Learn: React.FC<LearnProps> = ({
     );
   }
 
+  if (!lessons || lessons.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="text-center max-w-md">
+          <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h2 className="text-2xl font-bold mb-2">No Lessons Available</h2>
+          <p className="text-muted-foreground mb-6">
+            Lessons are being loaded. Please refresh the page or try again in a
+            moment.
+          </p>
+          <Button onClick={() => window.location.reload()} className="gap-2">
+            <span>Refresh Page</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const isNetworkError =
+    propError &&
+    (propError.message.includes("Failed to fetch") ||
+      propError.message.includes("Network error") ||
+      propError.message.includes("Cannot reach Supabase") ||
+      propError.message.includes("Loading took too long"));
+
   return (
     <div className="space-y-8">
+      {/* Error Banner - if offline mode */}
+      {isNetworkError && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
+          <div className="flex-shrink-0 pt-0.5">
+            <span className="text-xl">⚠️</span>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-amber-700 dark:text-amber-400 mb-1">
+              Offline Mode - Showing Sample Lessons
+            </h3>
+            <p className="text-sm text-amber-600 dark:text-amber-300 mb-3">
+              Cannot connect to lesson server. Displaying sample lessons. Check
+              your internet connection above or click "Diagnose" for help.
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  // @ts-ignore
+                  if (typeof window.checkSupabaseHealth === "function") {
+                    // @ts-ignore
+                    window.checkSupabaseHealth();
+                  }
+                }}
+              >
+                Diagnose
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => window.location.reload()}
+              >
+                Retry Connection
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="max-w-4xl">
         <h1 className="text-4xl md:text-5xl font-bold mb-2">Learn</h1>

@@ -4,7 +4,19 @@ import { lessonService } from "@/services/lessonService";
 export const useAllLessons = () => {
   return useQuery({
     queryKey: ["lessons"],
-    queryFn: () => lessonService.getAllLessons(),
+    queryFn: async () => {
+      console.log("📚 Fetching all lessons from Supabase...");
+      try {
+        const data = await lessonService.getAllLessons();
+        console.log(`✅ Successfully fetched ${data?.length || 0} lessons`);
+        return data;
+      } catch (error) {
+        console.error("❌ Error fetching lessons:", error);
+        throw error;
+      }
+    },
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 

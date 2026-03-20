@@ -33,13 +33,50 @@ const LearnPage = () => {
     data: lessons,
     isLoading: lessonsLoading,
     refetch: refetchLessons,
+    error: lessonsError,
   } = useAllLessons();
   const { data: progress } = useUserProgress(user?.id);
+  const [seedError, setSeedError] = React.useState<string | null>(null);
+  const [loadingTimedOut, setLoadingTimedOut] = React.useState(false);
+  const timeoutAppliedRef = React.useRef(false);
+  const seedAttemptedRef = React.useRef(false);
 
-  // Seed lessons on mount only
+  // Show loading for 2 seconds on initial mount, then show mock lessons
+  useEffect(() => {
+    // Only apply timeout once
+    if (timeoutAppliedRef.current) {
+      return;
+    }
+
+    if (!lessonsLoading) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (!timeoutAppliedRef.current) {
+        console.warn(
+          "⏱️  Loading lessons took too long (2s), showing sample lessons",
+        );
+        timeoutAppliedRef.current = true;
+        setLoadingTimedOut(true);
+      }
+    }, 2000); // 2 second timeout - show something quickly
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Seed lessons on mount only - single attempt
   useEffect(() => {
     const seedAndFetch = async () => {
+      // Skip if we've already attempted
+      if (seedAttemptedRef.current) {
+        return;
+      }
+
+      seedAttemptedRef.current = true;
+
       try {
+        setSeedError(null);
         // Only seed if we have no lessons
         if (!lessons || lessons.length === 0) {
           console.log("🌱 No lessons found, seeding...");
@@ -56,21 +93,18 @@ const LearnPage = () => {
           console.log(`✅ Lessons already loaded: ${lessons.length} lessons`);
         }
       } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
         console.error("Failed to seed lessons:", err);
-        // Try refetching anyway
-        try {
-          await refetchLessons();
-        } catch (refetchErr) {
-          console.error("Refetch also failed:", refetchErr);
-        }
+        setSeedError(errorMsg);
+        // Don't retry - just show error and mock lessons
       }
     };
 
-    // Only run when session is established and we're not already loading
-    if (session && lessonsLoading === false) {
+    // Only run when session is established
+    if (session && !seedAttemptedRef.current) {
       seedAndFetch();
     }
-  }, [session, lessonsLoading, refetchLessons]);
+  }, [session]);
 
   if (loading) {
     return (
@@ -111,6 +145,8 @@ const LearnPage = () => {
     );
   }
 
+  const hasError = lessonsError || seedError;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
@@ -127,7 +163,14 @@ const LearnPage = () => {
         <Learn
           lessons={lessons}
           progress={progress}
-          isLoading={lessonsLoading}
+          isLoading={lessonsLoading && !loadingTimedOut}
+          error={
+            lessonsError ||
+            (loadingTimedOut && !lessons?.length
+              ? new Error("Loading took too long. Please try again.")
+              : null)
+          }
+          refetch={refetchLessons}
         />
       </div>
     </div>

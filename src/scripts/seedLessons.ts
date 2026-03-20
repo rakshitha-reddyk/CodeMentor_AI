@@ -503,7 +503,10 @@ export async function seedLessons() {
       .limit(1);
 
     if (checkError) {
-      console.error("Error checking existing lessons:", checkError);
+      console.error("❌ Error checking existing lessons:", checkError);
+      console.error(
+        "   This might be due to RLS policies. Lessons table might not have read access.",
+      );
       throw checkError;
     }
 
@@ -514,7 +517,7 @@ export async function seedLessons() {
       return existingLessons;
     }
 
-    console.log(`Inserting ${dummyLessons.length} lessons...`);
+    console.log(`📝 Inserting ${dummyLessons.length} lessons...`);
 
     // Insert all dummy lessons in batches to avoid payload size issues
     const batchSize = 5;
@@ -522,6 +525,10 @@ export async function seedLessons() {
 
     for (let i = 0; i < dummyLessons.length; i += batchSize) {
       const batch = dummyLessons.slice(i, i + batchSize);
+      console.log(
+        `   📦 Inserting batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(dummyLessons.length / batchSize)}...`,
+      );
+
       const { data, error } = await supabase
         .from("lessons")
         .insert(batch)
@@ -529,10 +536,10 @@ export async function seedLessons() {
 
       if (error) {
         console.error(
-          `Error seeding lessons batch ${i / batchSize + 1}:`,
+          `❌ Error seeding lessons batch ${i / batchSize + 1}:`,
           error,
         );
-        throw error;
+        throw new Error(`Batch insert failed: ${error.message}`);
       }
 
       if (data) {
@@ -543,7 +550,13 @@ export async function seedLessons() {
     console.log(`✅ Successfully seeded ${allData.length} lessons!`);
     return allData;
   } catch (error) {
-    console.error("Error in seedLessons:", error);
+    console.error("❌ Error in seedLessons:", error);
+    console.error("   Please check that:");
+    console.error("   1. 'lessons' table exists in Supabase");
+    console.error(
+      "   2. Row Level Security (RLS) policies allow read/insert access",
+    );
+    console.error("   3. Database connection is working");
     throw error;
   }
 }
