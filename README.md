@@ -8,7 +8,7 @@ It provides a VS Code–like learning experience with lessons, AI mentor simulat
 ## 🔗 Live Demo
 https://code-mentor-ai-nu.vercel.app/
 
-## 🔗 GitHub Repository
+## 🔗 GitHub Repository 
 https://github.com/rakshitha-reddyk/CodeMentor_AI
 
 ---
