@@ -9,6 +9,7 @@ import PracticePage from "./pages/Practice";
 import ProgressPage from "./pages/Progress";
 import AnalyticsPage from "./pages/Analytics";
 import SettingsPage from "./pages/Settings";
+import ChallengePage from "./pages/Challenge";
 
 const App = () => (
   <Routes>
@@ -21,6 +22,7 @@ const App = () => (
     <Route path="/progress" element={<ProgressPage />} />
     <Route path="/analytics" element={<AnalyticsPage />} />
     <Route path="/settings" element={<SettingsPage />} />
+    <Route path="/challenge/:id" element={<ChallengePage />} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
   </Routes>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Trophy, Zap, Lock, ChevronRight } from "lucide-react";
 interface Challenge {
   id: number;
   title: string;
+  slug: string;
   difficulty: "Easy" | "Medium" | "Hard";
   points: number;
   description: string;
@@ -16,9 +18,12 @@ interface Challenge {
 }
 
 const DailyChallengeCard: React.FC = () => {
+  const navigate = useNavigate();
+
   const [challenge] = useState<Challenge>({
     id: 1,
     title: "Reverse a String",
+    slug: "reverse-string",
     difficulty: "Easy",
     points: 100,
     description:
@@ -39,6 +44,10 @@ const DailyChallengeCard: React.FC = () => {
       default:
         return "bg-blue-500/20 text-blue-400 border-blue-500/30";
     }
+  };
+
+  const handleStartChallenge = () => {
+    navigate(`/challenge/${challenge.slug}`);
   };
 
   return (
@@ -83,7 +92,10 @@ const DailyChallengeCard: React.FC = () => {
           </div>
         </div>
 
-        <Button className="w-full bg-gradient-to-r from-brand-primary to-brand-primary/80 hover:from-brand-primary/90 hover:to-brand-primary/70">
+        <Button
+          onClick={handleStartChallenge}
+          className="w-full bg-gradient-to-r from-brand-primary to-brand-primary/80 hover:from-brand-primary/90 hover:to-brand-primary/70"
+        >
           <Trophy className="w-4 h-4 mr-2" />
           Start Challenge
           <ChevronRight className="w-4 h-4 ml-2" />
