@@ -1,7 +1,7 @@
 # CodeMentor AI 🚀
 
 CodeMentor AI is an AI-powered coding education platform designed to help students learn programming in an interactive and modern way.  
-It provides a VS Code–like learning experience with lessons, AI mentor simulation, and a clean dashboard UI.
+It provides learning experience with lessons, AI mentor simulation, and a clean dashboard UI.
 
 ---
 
