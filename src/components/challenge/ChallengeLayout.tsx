@@ -119,7 +119,7 @@ const ChallengeLayout: React.FC<ChallengeLayoutProps> = ({
 
           {/* AI Mentor Panel */}
           <div className="flex-1 overflow-hidden">
-            <AiMentorPanel />
+            <AiMentorPanel challenge={challenge} code={code} />
           </div>
         </div>
       </div>

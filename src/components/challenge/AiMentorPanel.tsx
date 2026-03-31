@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,115 +13,117 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Challenge } from "@/data/challengeTypes";
+import { AIMentorService } from "@/services/aiMentorService";
 
 interface AIResponse {
   type: "hint" | "explanation" | "approach" | "debug" | "optimize";
   content: string;
+  relatedConcepts: string[];
+  difficulty: "beginner" | "intermediate" | "advanced";
 }
 
-const AiMentorPanel: React.FC = () => {
+interface AiMentorPanelProps {
+  challenge: Challenge;
+  code: string;
+}
+
+const AiMentorPanel: React.FC<AiMentorPanelProps> = ({ challenge, code }) => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<AIResponse | null>(null);
 
-  // Mock AI responses
-  const aiResponses: Record<string, AIResponse> = {
-    hint: {
-      type: "hint",
-      content: `Here's a helpful hint:
-      
-Consider breaking down the problem into smaller steps:
-1. What do you need to iterate through?
-2. How will you build your result?
-3. What data structure would work best?
-
-Try starting with the simplest approach first, then optimize if needed.`,
-    },
-    explanation: {
-      type: "explanation",
-      content: `Let me explain this problem:
-
-The key concept here is understanding what the problem is asking:
-- You need to process input and produce a specific output
-- Consider the edge cases (empty input, single element, etc.)
-- Think about the time and space complexity
-
-This type of problem tests your basic understanding of:
-- Data structures (arrays, strings, maps)
-- Loop logic and control flow
-- Problem decomposition`,
-    },
-    approach: {
-      type: "approach",
-      content: `Here's a recommended approach:
-
-Step 1: Understand the input/output format
-Step 2: Think about the algorithm:
-   - Option A: Brute force (simple but slower)
-   - Option B: Optimized approach (more efficient)
-Step 3: Choose data structures
-Step 4: Write pseudocode first
-Step 5: Implement in your preferred language
-Step 6: Test with examples
-Step 7: Optimize if needed
-
-Start with clarity over optimization!`,
-    },
-    debug: {
-      type: "debug",
-      content: `Debugging tips:
-
-1. Check your inputs and outputs match the expected format
-2. Add console.log/print statements to trace execution
-3. Test with the provided examples first
-4. Test edge cases:
-   - Empty input
-   - Single element
-   - Large inputs
-   - Special characters or values
-5. Use a debugger to step through your code
-6. Compare your output with expected output character by character
-
-What specific output are you getting vs expecting?`,
-    },
-    optimize: {
-      type: "optimize",
-      content: `Optimization strategies:
-
-1. Identify bottlenecks:
-   - What's the time complexity of your current solution?
-   - Can you reduce it by using better data structures?
-   
-2. Common optimizations:
-   - Use hash maps/dictionaries instead of nested loops
-   - Avoid redundant calculations
-   - Use built-in library functions
-   
-3. Space vs Time trade-offs:
-   - Sometimes using more memory enables faster solutions
-   
-4. Profile your code to see where time is spent
-
-What's your current approach? I can suggest specific optimizations!`,
-    },
-  };
+  // Debug: log when component mounts or challenge changes
+  useEffect(() => {
+    console.log("AiMentorPanel mounted/updated with challenge:", challenge);
+    console.log("Code:", code);
+  }, [challenge, code]);
 
   const handleAskMentor = async (tag: string) => {
+    console.log("Hint button clicked with tag:", tag);
     setSelectedTag(tag);
     setIsLoading(true);
     setResponse(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    // Simulate a slight delay for better UX
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
-    setResponse(
-      aiResponses[tag] || {
+    // Get response from AI Mentor Service based on tag
+    let mentorResponse: AIResponse | null = null;
+
+    try {
+      console.log("Processing mentor request for:", tag);
+      console.log("Challenge exists:", !!challenge);
+      console.log("Challenge title:", challenge?.title);
+      console.log("Challenge hints array:", challenge?.hints);
+
+      if (!challenge) {
+        console.error("Challenge is undefined!");
+        throw new Error("Challenge is not defined");
+      }
+
+      switch (tag) {
+        case "hint":
+          console.log("Getting hint...");
+          // Directly create a response from challenge hints
+          const firstHint =
+            challenge.hints && challenge.hints.length > 0
+              ? challenge.hints[0]
+              : "Try starting with a simple case and gradually build up.";
+
+          mentorResponse = {
+            type: "hint",
+            content: firstHint,
+            relatedConcepts: challenge.categories || [],
+            difficulty: "beginner",
+          };
+          console.log("Created hint response:", mentorResponse);
+          break;
+
+        case "explanation":
+          mentorResponse = AIMentorService.getExplanation(challenge);
+          break;
+
+        case "approach":
+          mentorResponse = AIMentorService.getApproach(challenge);
+          break;
+
+        case "debug":
+          mentorResponse = AIMentorService.debugCode(challenge, code);
+          break;
+
+        case "optimize":
+          mentorResponse = AIMentorService.optimizeCode(challenge, code);
+          break;
+
+        default:
+          mentorResponse = {
+            type: "hint",
+            content:
+              "I'm here to help! What specific aspect do you need help with?",
+            relatedConcepts: [],
+            difficulty: "beginner",
+          };
+      }
+
+      if (mentorResponse) {
+        console.log("Response before setResponse:", mentorResponse);
+        setResponse(mentorResponse);
+        console.log("Response state should now be set");
+      }
+    } catch (error) {
+      console.error("Error in handleAskMentor:", error);
+      const errorResponse: AIResponse = {
         type: "hint",
-        content:
-          "I'm here to help! What specific aspect do you need help with?",
-      },
-    );
+        content: `Error: ${error instanceof Error ? error.message : "Unknown error"}. Try refreshing the page.`,
+        relatedConcepts: [],
+        difficulty: "beginner",
+      };
+      setResponse(errorResponse);
+    }
+
     setIsLoading(false);
+    console.log("Finished processing mentor request");
   };
 
   const mentorButtons = [

@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { RecommendationProvider } from "@/contexts/RecommendationContext";
 
 /**
  * Application Provider Setup
@@ -42,11 +43,13 @@ interface AppProvidersProps {
 
 /**
  * Root provider component that wraps the entire application
- * Provides authentication and data fetching capabilities
+ * Provides authentication, data fetching, and recommendations
  */
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>{children}</AuthProvider>
+    <AuthProvider>
+      <RecommendationProvider>{children}</RecommendationProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
