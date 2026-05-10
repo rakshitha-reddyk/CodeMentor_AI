@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import PremiumModal from "@/components/PremiumModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
   Zap,
   BookOpen,
   Trophy,
+  Lock,
 } from "lucide-react";
 
 interface CodeProblem {
@@ -35,12 +37,19 @@ interface CodeProblem {
 
 const Practice = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
+    null,
+  );
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedProblem, setSelectedProblem] = useState<CodeProblem | null>(null);
+  const [selectedProblem, setSelectedProblem] = useState<CodeProblem | null>(
+    null,
+  );
   const [code, setCode] = useState("// Write your code here\n\n");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [premiumAction, setPremiumAction] = useState<string | null>(null);
+  const [demoContent, setDemoContent] = useState<string | null>(null);
 
   // Mock problems data
   const problems: CodeProblem[] = [
@@ -63,7 +72,10 @@ const Practice = () => {
           output: "[1,2]",
         },
       ],
-      hints: ["Use a hash map to store values you've seen", "For each number, check if target - num exists in the map"],
+      hints: [
+        "Use a hash map to store values you've seen",
+        "For each number, check if target - num exists in the map",
+      ],
     },
     {
       id: 2,
@@ -76,9 +88,15 @@ const Practice = () => {
         "Write a function that reverses a string. The input string is given as an array of characters s.",
       examples: [
         { input: 's = ["h","e","l","l","o"]', output: '["o","l","l","e","h"]' },
-        { input: 's = ["H","a","n","n","a","h"]', output: '["h","a","n","n","a","H"]' },
+        {
+          input: 's = ["H","a","n","n","a","h"]',
+          output: '["h","a","n","n","a","H"]',
+        },
       ],
-      hints: ["Use two pointers approach", "Swap characters from start and end"],
+      hints: [
+        "Use two pointers approach",
+        "Swap characters from start and end",
+      ],
     },
     {
       id: 3,
@@ -93,7 +111,10 @@ const Practice = () => {
         { input: "nums = [-1,0,3,5,9,12], target = 9", output: "4" },
         { input: "nums = [-1,0,3,5,9,12], target = 13", output: "-1" },
       ],
-      hints: ["Use binary search algorithm", "Split the search space in half each time"],
+      hints: [
+        "Use binary search algorithm",
+        "Split the search space in half each time",
+      ],
     },
     {
       id: 4,
@@ -108,7 +129,10 @@ const Practice = () => {
         { input: 's = "babad"', output: '"bab" or "aba"' },
         { input: 's = "cbbd"', output: '"bb"' },
       ],
-      hints: ["Consider all possible substrings", "Use dynamic programming or expand around center"],
+      hints: [
+        "Consider all possible substrings",
+        "Use dynamic programming or expand around center",
+      ],
     },
     {
       id: 5,
@@ -120,9 +144,15 @@ const Practice = () => {
       description:
         "You are given two integer arrays nums1 and nums2, sorted in non-decreasing order, and two integers m and n representing the number of valid elements in nums1 and nums2 respectively.",
       examples: [
-        { input: "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3", output: "[1,2,2,3,5,6]" },
+        {
+          input: "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3",
+          output: "[1,2,2,3,5,6]",
+        },
       ],
-      hints: ["Start from the end of both arrays", "Compare and place larger elements at the end"],
+      hints: [
+        "Start from the end of both arrays",
+        "Compare and place larger elements at the end",
+      ],
     },
     {
       id: 6,
@@ -138,21 +168,33 @@ const Practice = () => {
         { input: "n = 3", output: "2" },
         { input: "n = 4", output: "3" },
       ],
-      hints: ["Simple recursion with memoization", "Or use iterative approach for better performance"],
+      hints: [
+        "Simple recursion with memoization",
+        "Or use iterative approach for better performance",
+      ],
     },
   ];
 
   const difficulties = ["All", "Easy", "Medium", "Hard", "Completed"];
-  const categories = ["Arrays", "Strings", "Recursion", "DSA", "JavaScript", "React", "Python"];
+  const categories = [
+    "Arrays",
+    "Strings",
+    "Recursion",
+    "DSA",
+    "JavaScript",
+    "React",
+    "Python",
+  ];
 
   // Filter problems
   const filteredProblems = useMemo(() => {
     let filtered = problems;
 
     if (searchQuery) {
-      filtered = filtered.filter((p) =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase()),
+      filtered = filtered.filter(
+        (p) =>
+          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.category.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -177,7 +219,8 @@ const Practice = () => {
     attempted: problems.filter((p) => p.status === "attempted").length,
     total: problems.length,
     accuracy: Math.round(
-      (problems.filter((p) => p.status === "solved").length / problems.length) * 100,
+      (problems.filter((p) => p.status === "solved").length / problems.length) *
+        100,
     ),
     streak: 7,
   };
@@ -186,7 +229,9 @@ const Practice = () => {
     setIsRunning(true);
     // Simulate code execution
     setTimeout(() => {
-      setOutput("✓ Output:\nTest case 1 passed\nTest case 2 passed\n2/2 test cases passed");
+      setOutput(
+        "✓ Output:\nTest case 1 passed\nTest case 2 passed\n2/2 test cases passed",
+      );
       setIsRunning(false);
     }, 1500);
   };
@@ -262,8 +307,12 @@ const Practice = () => {
                       className="bg-surface-elevated/50 border border-border/50 rounded-lg p-3 text-xs"
                     >
                       <div className="font-mono">
-                        <div className="text-muted-foreground">Input: {example.input}</div>
-                        <div className="text-brand-success mt-1">Output: {example.output}</div>
+                        <div className="text-muted-foreground">
+                          Input: {example.input}
+                        </div>
+                        <div className="text-brand-success mt-1">
+                          Output: {example.output}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -274,7 +323,10 @@ const Practice = () => {
                 <h3 className="font-semibold mb-2">Hints</h3>
                 <ul className="space-y-1">
                   {selectedProblem.hints.map((hint, idx) => (
-                    <li key={idx} className="text-sm text-muted-foreground flex gap-2">
+                    <li
+                      key={idx}
+                      className="text-sm text-muted-foreground flex gap-2"
+                    >
                       <Lightbulb className="w-4 h-4 text-brand-warning flex-shrink-0 mt-0.5" />
                       {hint}
                     </li>
@@ -294,6 +346,10 @@ const Practice = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <Button
+                onClick={() => {
+                  setPremiumAction("explain");
+                  setShowPremiumModal(true);
+                }}
                 variant="outline"
                 className="w-full justify-start text-xs border-brand-primary/30 hover:bg-brand-primary/10"
               >
@@ -301,6 +357,12 @@ const Practice = () => {
                 Explain Problem
               </Button>
               <Button
+                onClick={() => {
+                  // keep Show Hint as immediate free action
+                  setDemoContent(
+                    selectedProblem.hints[0] || "Try a simple approach first.",
+                  );
+                }}
                 variant="outline"
                 className="w-full justify-start text-xs border-yellow-500/30 hover:bg-yellow-500/10"
               >
@@ -308,18 +370,42 @@ const Practice = () => {
                 Show Hint
               </Button>
               <Button
+                onClick={() => {
+                  setPremiumAction("generate");
+                  setShowPremiumModal(true);
+                }}
                 variant="outline"
                 className="w-full justify-start text-xs border-purple-500/30 hover:bg-purple-500/10"
               >
-                <Code className="w-4 h-4 mr-2" />
-                Generate Solution
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Code className="w-4 h-4 mr-2" />
+                    <span>Generate Solution</span>
+                  </div>
+                  <span className="ml-2 flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300">
+                    <Lock className="w-3 h-3" />
+                    Premium
+                  </span>
+                </div>
               </Button>
               <Button
+                onClick={() => {
+                  setPremiumAction("optimize");
+                  setShowPremiumModal(true);
+                }}
                 variant="outline"
                 className="w-full justify-start text-xs border-amber-500/30 hover:bg-amber-500/10"
               >
-                <Zap className="w-4 h-4 mr-2" />
-                Optimize Code
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Zap className="w-4 h-4 mr-2" />
+                    <span>Optimize Code</span>
+                  </div>
+                  <span className="ml-2 flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">
+                    <Lock className="w-3 h-3" />
+                    Premium
+                  </span>
+                </div>
               </Button>
             </CardContent>
           </Card>
@@ -345,7 +431,18 @@ const Practice = () => {
             </CardContent>
           </Card>
 
-          {/* Output */}
+          {/* Demo output or Output */}
+          {demoContent && (
+            <Card className="gradient-card border-card-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">AI Demo</CardTitle>
+              </CardHeader>
+              <CardContent className="font-mono text-xs whitespace-pre-wrap text-muted-foreground">
+                {demoContent}
+              </CardContent>
+            </Card>
+          )}
+
           {output && (
             <Card className="gradient-card border-card-border">
               <CardHeader className="pb-3">
@@ -385,6 +482,33 @@ const Practice = () => {
           </div>
         </div>
       </div>
+      <PremiumModal
+        open={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        onPrimary={() => {
+          // Try a short demo — provide a simple canned response depending on action
+          setShowPremiumModal(false);
+          if (premiumAction === "explain") {
+            setDemoContent(
+              selectedProblem
+                ? `Summary: ${selectedProblem.description.split(".")[0]}.`
+                : "Short explanation not available.",
+            );
+          } else if (premiumAction === "generate") {
+            setDemoContent(
+              "// Example solution preview:\nfunction reverse(s){ /* ... */ }",
+            );
+          } else if (premiumAction === "optimize") {
+            setDemoContent(
+              "// Optimization preview:\n// Consider reducing loops and using in-place operations.",
+            );
+          }
+        }}
+        onSecondary={() => {
+          console.log("Learn more requested for:", premiumAction);
+          setShowPremiumModal(false);
+        }}
+      />
     </div>
   ) : (
     // Problem List View
@@ -401,29 +525,45 @@ const Practice = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="gradient-card border-card-border">
           <CardContent className="pt-4 text-center">
-            <div className="text-3xl font-bold text-brand-success mb-1">{stats.solved}</div>
-            <div className="text-xs font-medium text-muted-foreground uppercase">Solved</div>
+            <div className="text-3xl font-bold text-brand-success mb-1">
+              {stats.solved}
+            </div>
+            <div className="text-xs font-medium text-muted-foreground uppercase">
+              Solved
+            </div>
           </CardContent>
         </Card>
         <Card className="gradient-card border-card-border">
           <CardContent className="pt-4 text-center">
-            <div className="text-3xl font-bold text-blue-400 mb-1">{stats.attempted}</div>
-            <div className="text-xs font-medium text-muted-foreground uppercase">Attempted</div>
+            <div className="text-3xl font-bold text-blue-400 mb-1">
+              {stats.attempted}
+            </div>
+            <div className="text-xs font-medium text-muted-foreground uppercase">
+              Attempted
+            </div>
           </CardContent>
         </Card>
         <Card className="gradient-card border-card-border">
           <CardContent className="pt-4 text-center">
-            <div className="text-3xl font-bold text-purple-400 mb-1">{stats.accuracy}%</div>
-            <div className="text-xs font-medium text-muted-foreground uppercase">Accuracy</div>
+            <div className="text-3xl font-bold text-purple-400 mb-1">
+              {stats.accuracy}%
+            </div>
+            <div className="text-xs font-medium text-muted-foreground uppercase">
+              Accuracy
+            </div>
           </CardContent>
         </Card>
         <Card className="gradient-card border-card-border">
           <CardContent className="pt-4 text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Flame className="w-5 h-5 text-orange-400" />
-              <span className="text-3xl font-bold text-orange-400">{stats.streak}</span>
+              <span className="text-3xl font-bold text-orange-400">
+                {stats.streak}
+              </span>
             </div>
-            <div className="text-xs font-medium text-muted-foreground uppercase">Streak</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase">
+              Streak
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -449,7 +589,9 @@ const Practice = () => {
               <button
                 key={diff}
                 onClick={() =>
-                  setSelectedDifficulty(diff === selectedDifficulty ? null : diff)
+                  setSelectedDifficulty(
+                    diff === selectedDifficulty ? null : diff,
+                  )
                 }
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   selectedDifficulty === diff
@@ -467,7 +609,9 @@ const Practice = () => {
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(cat === selectedCategory ? null : cat)}
+                onClick={() =>
+                  setSelectedCategory(cat === selectedCategory ? null : cat)
+                }
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   selectedCategory === cat
                     ? "bg-brand-primary text-white"
@@ -557,6 +701,8 @@ const Practice = () => {
           ))}
         </div>
       )}
+
+      {/* Premium modal handled per-view */}
     </div>
   );
 };

@@ -99,4 +99,33 @@ export const analyticsService = {
     if (error) throw error;
     return data;
   },
+
+  // Sync analytics from user progress (call this after completing a lesson)
+  async syncAnalyticsFromProgress(userId: string) {
+    // Get all user progress
+    const { data: progressData, error: progressError } = await supabase
+      .from("progress")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (progressError) throw progressError;
+
+    if (!progressData) return null;
+
+    // Calculate totals
+    const completedLessons = progressData.filter(
+      (p: any) => p.status === "completed",
+    ).length;
+    const totalTimeSpent = progressData.reduce(
+      (sum: number, p: any) => sum + (p.time_spent || 0),
+      0,
+    );
+
+    // Update analytics
+    return this.updateAnalytics(userId, {
+      total_lessons_completed: completedLessons,
+      total_time_spent: totalTimeSpent,
+      last_active: new Date().toISOString(),
+    });
+  },
 };

@@ -39,25 +39,27 @@ export const backendUtils = {
    * Calculate learning statistics
    */
   calculateStats(analytics: any, progress: any[]) {
-    if (!analytics || !progress) return null;
+    if (!analytics && (!progress || progress.length === 0)) return null;
 
     const completedLessons = progress.filter(
       (p) => p.status === "completed",
+    ).length;
+    const inProgressLessons = progress.filter(
+      (p) => p.status === "in-progress" || p.status === "in_progress",
     ).length;
     const averageScore =
       progress.length > 0
         ? progress.reduce((sum, p) => sum + (p.score || 0), 0) / progress.length
         : 0;
 
-    const streakDays = Math.floor((analytics.total_time_spent || 0) / 60);
+    const streakDays = Math.floor((analytics?.total_time_spent || 0) / 60);
 
     return {
       totalLessons: progress.length,
       completedLessons,
-      inProgressLessons: progress.filter((p) => p.status === "in_progress")
-        .length,
+      inProgressLessons,
       averageScore: Math.round(averageScore),
-      totalTimeSpent: analytics.total_time_spent || 0,
+      totalTimeSpent: analytics?.total_time_spent || 0,
       streakDays,
       completionRate: Math.round(
         (completedLessons / Math.max(progress.length, 1)) * 100,

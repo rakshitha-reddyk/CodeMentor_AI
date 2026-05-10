@@ -1,7 +1,7 @@
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import CodePreview from "@/components/CodePreview";
-import Dashboard from "@/components/Dashboard";
+import HeroDashboardPreview from "@/components/HeroDashboardPreview";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -11,7 +11,7 @@ const Index = () => {
         <Hero />
         <Features />
         <CodePreview />
-        <Dashboard />
+        <HeroDashboardPreview />
       </main>
       <Footer />
     </div>

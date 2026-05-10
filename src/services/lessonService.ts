@@ -1,68 +1,90 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  getAllLessons as getMockLessons,
+  getLessonById as getMockLessonById,
+  getLessonsByDifficulty as getMockLessonsByDifficulty,
+  MOCK_LESSONS,
+  type MockLesson,
+} from "@/data/mockLessons";
 
-export type Lesson = Tables<"lessons">;
+export type Lesson = Tables<"lessons"> | MockLesson;
 
 export const lessonService = {
-  // Get all lessons
+  // Get all lessons (local first, fallback to Supabase)
   async getAllLessons() {
-    console.log("🔍 lessonService.getAllLessons() called");
+    console.log("📚 lessonService.getAllLessons() called");
+
+    // Try Supabase first
     try {
       const { data, error } = await supabase
         .from("lessons")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("❌ Supabase error fetching lessons:", error);
-        throw new Error(`Supabase Error: ${error.message}`);
+      if (!error && data && data.length > 0) {
+        console.log(`✅ Fetched ${data.length} lessons from Supabase`);
+        return data;
       }
-
-      console.log(`✅ Fetched ${data?.length || 0} lessons`);
-      return data;
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-
-      // Check for network/DNS errors
-      if (
-        errorMsg.includes("Failed to fetch") ||
-        errorMsg.includes("ERR_NAME_NOT_RESOLVED")
-      ) {
-        console.error("🌐 Network connectivity issue - cannot reach Supabase");
-        console.error(
-          "   Check: Internet connection, firewall, or DNS resolution",
-        );
-        throw new Error(
-          "Network error: Cannot reach Supabase. Check your internet connection.",
-        );
-      }
-
-      throw err;
+      console.warn("⚠️ Supabase failed, using local lessons:", err);
     }
+
+    // Fallback to local mock lessons
+    console.log(`📖 Using local mock lessons (${MOCK_LESSONS.length} lessons)`);
+    return getMockLessons();
   },
 
-  // Get lessons by difficulty
+  // Get lessons by difficulty (local first, fallback to Supabase)
   async getLessonsByDifficulty(difficulty: string) {
-    const { data, error } = await supabase
-      .from("lessons")
-      .select("*")
-      .eq("difficulty", difficulty)
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("lessons")
+        .select("*")
+        .eq("difficulty", difficulty)
+        .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    return data;
+      if (!error && data && data.length > 0) {
+        return data;
+      }
+    } catch (err) {
+      console.warn("⚠️ Supabase failed, using local lessons");
+    }
+
+    return getMockLessonsByDifficulty(
+      difficulty as "Beginner" | "Intermediate" | "Advanced",
+    );
   },
 
-  // Get lesson by ID
+  // Get lesson by ID (local first, fallback to Supabase)
   async getLesson(id: number) {
-    const { data, error } = await supabase
-      .from("lessons")
-      .select("*")
-      .eq("id", id)
-      .single();
+    console.log(`📖 lessonService.getLesson(${id}) called`);
 
-    if (error) throw error;
-    return data;
+    // Try Supabase first
+    try {
+      const { data, error } = await supabase
+        .from("lessons")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (!error && data) {
+        console.log(`✅ Fetched lesson ${id} from Supabase`);
+        return data;
+      }
+    } catch (err) {
+      console.warn(`⚠️ Supabase failed for lesson ${id}, using local data`);
+    }
+
+    // Fallback to local mock lesson
+    const mockLesson = getMockLessonById(id);
+    if (mockLesson) {
+      console.log(`📖 Using local mock lesson: ${mockLesson.title}`);
+      return mockLesson;
+    }
+
+    // Not found anywhere
+    throw new Error(`Lesson with ID ${id} not found`);
   },
 
   // Create lesson (admin only)

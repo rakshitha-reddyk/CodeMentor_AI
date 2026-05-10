@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   User,
   Mail,
@@ -58,11 +58,19 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
-  const [profile, setProfile] = useState<UserProfile>({
-    name: "Alex Johnson",
-    email: "alex@codementor.ai",
-    username: "alexjohnson",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+  const [profile, setProfile] = useState<UserProfile>(() => {
+    try {
+      const raw = localStorage.getItem("codementor_user_profile");
+      if (raw) return JSON.parse(raw) as UserProfile;
+    } catch (e) {
+      // ignore
+    }
+    return {
+      name: "Alex Johnson",
+      email: "alex@codementor.ai",
+      username: "alexjohnson",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+    };
   });
 
   const [formData, setFormData] = useState({
@@ -76,7 +84,19 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
     confirmPassword: "",
   });
 
-  const [theme, setTheme] = useState<"dark" | "light" | "system">("dark");
+  const [theme, setTheme] = useState<"dark" | "light" | "system">(() => {
+    try {
+      const saved = localStorage.getItem("codementor_theme") as
+        | "dark"
+        | "light"
+        | "system"
+        | null;
+      return saved || "dark";
+    } catch (e) {
+      return "dark";
+    }
+  });
+  const [saveMessage, setSaveMessage] = useState<string>("");
 
   const [preferences, setPreferences] = useState<PreferenceToggle[]>([
     {
@@ -147,12 +167,73 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
   };
 
   const handleSaveProfile = () => {
-    setProfile({
+    const updated = {
       ...profile,
       name: formData.fullName,
       email: formData.email,
-    });
+    };
+    setProfile(updated);
+    setSaveMessage("✅ Profile saved successfully!");
+    setTimeout(() => setSaveMessage(""), 3000);
+    try {
+      localStorage.setItem("codementor_user_profile", JSON.stringify(updated));
+    } catch (e) {
+      // ignore storage errors
+    }
   };
+
+  const fullNameRef = useRef<HTMLInputElement | null>(null);
+
+  const handleEditProfileClick = () => {
+    // populate form with current profile values and focus the first input
+    setFormData((prev) => ({
+      ...prev,
+      fullName: profile.name,
+      email: profile.email,
+    }));
+    setTimeout(() => {
+      fullNameRef.current?.focus();
+    }, 50);
+  };
+
+  // Sync formData when profile changes (e.g., after save or load from localStorage)
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      fullName: profile.name,
+      email: profile.email,
+    }));
+  }, [profile]);
+
+  // Apply theme to document and save to localStorage
+  useEffect(() => {
+    const html = document.documentElement;
+    try {
+      localStorage.setItem("codementor_theme", theme);
+    } catch (e) {
+      // ignore
+    }
+
+    if (theme === "dark") {
+      html.classList.add("dark");
+      html.classList.remove("light");
+    } else if (theme === "light") {
+      html.classList.remove("dark");
+      html.classList.add("light");
+    } else {
+      // system mode
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        html.classList.add("dark");
+        html.classList.remove("light");
+      } else {
+        html.classList.remove("dark");
+        html.classList.add("light");
+      }
+    }
+  }, [theme]);
 
   return (
     <div className="space-y-6 pb-8">
@@ -206,6 +287,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
                 variant="default"
                 size="sm"
                 className="rounded-lg gap-2 mt-4"
+                onClick={handleEditProfileClick}
               >
                 <Edit2 className="w-4 h-4" />
                 Edit Profile
@@ -227,6 +309,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
           <div>
             <label className="block text-sm font-medium mb-2">Full Name</label>
             <input
+              id="fullNameInput"
+              ref={fullNameRef}
               type="text"
               name="fullName"
               value={formData.fullName}
@@ -285,6 +369,11 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
               placeholder="••••••••"
             />
           </div>
+          {saveMessage && (
+            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+              {saveMessage}
+            </div>
+          )}
           <Button
             onClick={handleSaveProfile}
             className="rounded-lg w-full gap-2 mt-4"

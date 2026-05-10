@@ -2,22 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Brain,
-  Lightbulb,
-  BookOpen,
-  Bug,
-  Zap,
-  Loader,
-  MessageSquare,
-} from "lucide-react";
+import { Lightbulb, BookOpen, Loader, MessageSquare, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PremiumModal from "@/components/PremiumModal";
 import { Challenge } from "@/data/challengeTypes";
 import { AIMentorService } from "@/services/aiMentorService";
 
 interface AIResponse {
-  type: "hint" | "explanation" | "approach" | "debug" | "optimize";
+  type: "hint" | "explanation";
   content: string;
   relatedConcepts: string[];
   difficulty: "beginner" | "intermediate" | "advanced";
@@ -32,6 +24,8 @@ const AiMentorPanel: React.FC<AiMentorPanelProps> = ({ challenge, code }) => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<AIResponse | null>(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   // Debug: log when component mounts or challenge changes
   useEffect(() => {
@@ -84,23 +78,10 @@ const AiMentorPanel: React.FC<AiMentorPanelProps> = ({ challenge, code }) => {
           mentorResponse = AIMentorService.getExplanation(challenge);
           break;
 
-        case "approach":
-          mentorResponse = AIMentorService.getApproach(challenge);
-          break;
-
-        case "debug":
-          mentorResponse = AIMentorService.debugCode(challenge, code);
-          break;
-
-        case "optimize":
-          mentorResponse = AIMentorService.optimizeCode(challenge, code);
-          break;
-
         default:
           mentorResponse = {
             type: "hint",
-            content:
-              "I'm here to help! What specific aspect do you need help with?",
+            content: "I'm here to help! Click Show Hint for guidance.",
             relatedConcepts: [],
             difficulty: "beginner",
           };
@@ -136,31 +117,10 @@ const AiMentorPanel: React.FC<AiMentorPanelProps> = ({ challenge, code }) => {
     },
     {
       id: "explanation",
-      label: "Explain",
+      label: "Explain Solution",
       icon: BookOpen,
       color: "text-blue-400",
-      description: "Explain the problem",
-    },
-    {
-      id: "approach",
-      label: "Approach",
-      icon: Brain,
-      color: "text-purple-400",
-      description: "Show solution approach",
-    },
-    {
-      id: "debug",
-      label: "Debug",
-      icon: Bug,
-      color: "text-red-400",
-      description: "Debug your code",
-    },
-    {
-      id: "optimize",
-      label: "Optimize",
-      icon: Zap,
-      color: "text-codementor-lime",
-      description: "Optimize solution",
+      description: "Explain the solution",
     },
   ];
 
@@ -171,28 +131,47 @@ const AiMentorPanel: React.FC<AiMentorPanelProps> = ({ challenge, code }) => {
           <MessageSquare className="w-5 h-5 text-brand-primary" />
           AI Mentor
         </CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">
+          Get coding hints and explanations.
+        </p>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden">
+      <CardContent className="flex-1 flex flex-col gap-3 overflow-hidden">
         {/* Mentor Buttons */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex gap-2">
           {mentorButtons.map((btn) => {
             const Icon = btn.icon;
+            const isPremium = btn.id === "explanation";
             return (
               <Button
                 key={btn.id}
-                variant={selectedTag === btn.id ? "default" : "outline"}
+                variant={
+                  selectedTag === btn.id
+                    ? "default"
+                    : isPremium
+                      ? "outline"
+                      : "default"
+                }
                 size="sm"
-                onClick={() => handleAskMentor(btn.id)}
+                onClick={() => {
+                  if (isPremium) {
+                    setPendingAction(btn.id);
+                    setShowPremiumModal(true);
+                  } else {
+                    handleAskMentor(btn.id);
+                  }
+                }}
                 disabled={isLoading}
                 className={cn(
-                  "text-xs h-10 flex-col gap-1",
+                  "flex-1 text-xs gap-1",
+                  isPremium && "opacity-75",
                   selectedTag === btn.id &&
                     "bg-brand-primary/20 border-brand-primary/50",
                 )}
               >
-                <Icon className={cn("w-4 h-4", btn.color)} />
-                <span className="leading-tight">{btn.label}</span>
+                <Icon className="w-4 h-4" />
+                <span>{btn.label}</span>
+                {isPremium && <Lock className="w-3 h-3" />}
               </Button>
             );
           })}
@@ -227,15 +206,19 @@ const AiMentorPanel: React.FC<AiMentorPanelProps> = ({ challenge, code }) => {
             </div>
           )}
         </div>
-
-        {/* Info */}
-        <Alert className="text-xs border-border/50 bg-muted/50">
-          <AlertDescription>
-            💡 Your AI mentor is available 24/7 to help with hints,
-            explanations, and debugging.
-          </AlertDescription>
-        </Alert>
       </CardContent>
+      <PremiumModal
+        open={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        onPrimary={() => {
+          setShowPremiumModal(false);
+          if (pendingAction) handleAskMentor(pendingAction);
+        }}
+        onSecondary={() => {
+          console.log("Learn more requested for:", pendingAction);
+          setShowPremiumModal(false);
+        }}
+      />
     </Card>
   );
 };

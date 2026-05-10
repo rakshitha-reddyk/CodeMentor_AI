@@ -101,6 +101,34 @@ export const progressService = {
       user_id: userId,
       lesson_id: lessonId,
       status: "in_progress",
+      progress_percent: 0,
+      time_spent: 0,
+    });
+  },
+
+  // Update time spent on a lesson
+  async updateTimeSpent(
+    userId: string,
+    lessonId: number,
+    minutesSpent: number,
+  ) {
+    return this.saveProgress({
+      user_id: userId,
+      lesson_id: lessonId,
+      time_spent: minutesSpent,
+    });
+  },
+
+  // Update progress percentage
+  async updateProgressPercent(
+    userId: string,
+    lessonId: number,
+    progressPercent: number,
+  ) {
+    return this.saveProgress({
+      user_id: userId,
+      lesson_id: lessonId,
+      progress_percent: progressPercent,
     });
   },
 

@@ -89,6 +89,7 @@ const Learn: React.FC<LearnProps> = ({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [dismissOfflineWarning, setDismissOfflineWarning] = useState(false);
 
   // Filter levels only
   const levels = ["All", "Beginner", "Intermediate", "Advanced"];
@@ -188,43 +189,24 @@ const Learn: React.FC<LearnProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Error Banner - if offline mode */}
-      {isNetworkError && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
-          <div className="flex-shrink-0 pt-0.5">
-            <span className="text-xl">⚠️</span>
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-amber-700 dark:text-amber-400 mb-1">
-              Offline Mode - Showing Sample Lessons
-            </h3>
-            <p className="text-sm text-amber-600 dark:text-amber-300 mb-3">
-              Cannot connect to lesson server. Displaying sample lessons. Check
-              your internet connection above or click "Diagnose" for help.
+      {/* Subtle Offline Mode Indicator - Dismissible */}
+      {isNetworkError && !dismissOfflineWarning && (
+        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 flex items-center justify-between gap-3 backdrop-blur-sm">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-sm text-amber-600 dark:text-amber-400 flex-shrink-0">
+              📡
+            </span>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              You're browsing in demo mode. Real lessons will load when online.
             </p>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  // @ts-ignore
-                  if (typeof window.checkSupabaseHealth === "function") {
-                    // @ts-ignore
-                    window.checkSupabaseHealth();
-                  }
-                }}
-              >
-                Diagnose
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => window.location.reload()}
-              >
-                Retry Connection
-              </Button>
-            </div>
           </div>
+          <button
+            onClick={() => setDismissOfflineWarning(true)}
+            className="p-1 hover:bg-amber-500/10 rounded transition-colors flex-shrink-0"
+            aria-label="Dismiss"
+          >
+            <X className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          </button>
         </div>
       )}
 
