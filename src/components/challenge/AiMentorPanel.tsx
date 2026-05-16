@@ -2,18 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Lightbulb, BookOpen, Loader, MessageSquare, Lock } from "lucide-react";
+import {
+  Lightbulb,
+  BookOpen,
+  Loader,
+  MessageSquare,
+  Lock,
+  Brain,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import PremiumModal from "@/components/PremiumModal";
 import { Challenge } from "@/data/challengeTypes";
-import { AIMentorService } from "@/services/aiMentorService";
-
-interface AIResponse {
-  type: "hint" | "explanation";
-  content: string;
-  relatedConcepts: string[];
-  difficulty: "beginner" | "intermediate" | "advanced";
-}
+import { AIMentorService, type AIResponse } from "@/services/aiMentorService";
 
 interface AiMentorPanelProps {
   challenge: Challenge;

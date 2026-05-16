@@ -353,8 +353,16 @@ const Practice = () => {
                 variant="outline"
                 className="w-full justify-start text-xs border-brand-primary/30 hover:bg-brand-primary/10"
               >
-                <BookOpen className="w-4 h-4 mr-2" />
-                Explain Problem
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    <span>Explain Problem</span>
+                  </div>
+                  <span className="ml-2 flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary">
+                    <Lock className="w-3 h-3" />
+                    Premium
+                  </span>
+                </div>
               </Button>
               <Button
                 onClick={() => {

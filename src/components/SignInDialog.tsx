@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SignInDialogProps {
   open: boolean;
@@ -62,6 +63,24 @@ export const SignInDialog: React.FC<SignInDialogProps> = ({
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const googleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      if (error) {
+        throw error;
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Google login failed";
+      setError(errorMessage);
     }
   };
 
@@ -131,6 +150,15 @@ export const SignInDialog: React.FC<SignInDialogProps> = ({
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {isSignUp ? "Create Account" : "Sign In"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={googleLogin}
+          >
+            Continue with Google
           </Button>
         </form>
 

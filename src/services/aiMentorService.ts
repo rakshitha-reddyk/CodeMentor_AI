@@ -9,7 +9,7 @@ import { Challenge } from "@/data/challengeTypes";
  * - Request type (hint, explain, approach, debug, optimize)
  */
 
-interface AIResponse {
+export interface AIResponse {
   type: "hint" | "explanation" | "approach" | "debug" | "optimize";
   content: string;
   relatedConcepts: string[];

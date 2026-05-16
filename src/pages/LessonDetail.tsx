@@ -11,7 +11,6 @@ import {
   BookOpen,
   CheckCircle,
   AlertCircle,
-  MessageCircle,
   ChevronRight,
 } from "lucide-react";
 
@@ -23,7 +22,6 @@ const LessonDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showComingSoon, setShowComingSoon] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const lessonIdRef = useRef<number | null>(null);
 
@@ -401,28 +399,6 @@ const LessonDetailPage = () => {
               </CardContent>
             </Card>
 
-            {/* AI Help Card */}
-            <Card className="gradient-card border-brand-primary/20 bg-gradient-to-br from-brand-primary/10 to-purple-500/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <MessageCircle className="w-5 h-5 text-brand-primary" />
-                  Need Help?
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Ask our AI assistant for help with this lesson.
-                </p>
-                <Button
-                  onClick={() => setShowComingSoon(true)}
-                  className="w-full bg-gradient-to-r from-brand-primary to-purple-600 hover:from-brand-primary/90 hover:to-purple-600/90 text-white rounded-lg font-medium"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Ask AI
-                </Button>
-              </CardContent>
-            </Card>
-
             {/* Lesson Info Card */}
             <Card className="gradient-card border-card-border">
               <CardHeader>
@@ -464,37 +440,6 @@ const LessonDetailPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Coming Soon Modal */}
-      {showComingSoon && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md border-brand-primary/50 bg-surface-elevated shadow-2xl">
-            <CardContent className="pt-8">
-              <div className="text-center space-y-6">
-                <div className="text-5xl">🚀</div>
-                <h2 className="text-2xl font-bold">Coming Soon!</h2>
-                <p className="text-muted-foreground">
-                  AI-powered lesson assistance is coming in the next update.
-                </p>
-                <div className="bg-brand-primary/10 border border-brand-primary/30 rounded-lg p-4">
-                  <p className="text-sm text-brand-primary font-medium">
-                    ✨ Premium Feature
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Get personalized AI help with lessons and code reviews
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setShowComingSoon(false)}
-                  className="w-full rounded-lg"
-                >
-                  Got It
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 };
