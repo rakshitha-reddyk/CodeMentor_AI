@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ interface Recommendation {
 }
 
 const AIRecommendationCard: React.FC = () => {
+  const navigate = useNavigate();
   const [recommendations] = useState<Recommendation[]>([
     {
       id: 1,
@@ -72,6 +74,7 @@ const AIRecommendationCard: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
+              onClick={() => navigate("/practice")}
               className="w-full border-purple-500/30 hover:bg-purple-500/10 hover:border-purple-500/50"
             >
               Explore

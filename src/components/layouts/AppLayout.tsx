@@ -157,9 +157,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <Bell className="w-4 h-4" />
               </Button>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white text-sm font-semibold">
+              <Button
+                onClick={() => navigate("/settings")}
+                className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white text-sm font-semibold hover:shadow-lg hover:shadow-brand-primary/50 transition-all"
+              >
                 {userName.charAt(0).toUpperCase()}
-              </div>
+              </Button>
             </div>
           </div>
         </div>

@@ -51,7 +51,6 @@ const PracticePage = () => {
   return (
     <div className="w-full flex-1 fade-in">
       <div className="max-w-full">
-        <h1 className="text-3xl font-bold mb-8">Practice Coding</h1>
         <Practice />
       </div>
     </div>

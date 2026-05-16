@@ -11,79 +11,32 @@ import {
 export type Lesson = Tables<"lessons"> | MockLesson;
 
 export const lessonService = {
-  // Get all lessons (local first, fallback to Supabase)
+  // Get all lessons (optimized - uses local data)
   async getAllLessons() {
     console.log("📚 lessonService.getAllLessons() called");
-
-    // Try Supabase first
-    try {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        console.log(`✅ Fetched ${data.length} lessons from Supabase`);
-        return data;
-      }
-    } catch (err) {
-      console.warn("⚠️ Supabase failed, using local lessons:", err);
-    }
-
-    // Fallback to local mock lessons
-    console.log(`📖 Using local mock lessons (${MOCK_LESSONS.length} lessons)`);
+    console.log(`✅ Loaded ${MOCK_LESSONS.length} lessons`);
     return getMockLessons();
   },
 
-  // Get lessons by difficulty (local first, fallback to Supabase)
+  // Get lessons by difficulty (optimized - uses local data)
   async getLessonsByDifficulty(difficulty: string) {
-    try {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("difficulty", difficulty)
-        .order("created_at", { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        return data;
-      }
-    } catch (err) {
-      console.warn("⚠️ Supabase failed, using local lessons");
-    }
-
+    console.log(`📚 Getting ${difficulty} lessons`);
     return getMockLessonsByDifficulty(
       difficulty as "Beginner" | "Intermediate" | "Advanced",
     );
   },
 
-  // Get lesson by ID (local first, fallback to Supabase)
+  // Get lesson by ID (optimized - uses local data)
   async getLesson(id: number) {
     console.log(`📖 lessonService.getLesson(${id}) called`);
 
-    // Try Supabase first
-    try {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (!error && data) {
-        console.log(`✅ Fetched lesson ${id} from Supabase`);
-        return data;
-      }
-    } catch (err) {
-      console.warn(`⚠️ Supabase failed for lesson ${id}, using local data`);
-    }
-
-    // Fallback to local mock lesson
+    // Use local mock lesson directly for instant loading
     const mockLesson = getMockLessonById(id);
     if (mockLesson) {
-      console.log(`📖 Using local mock lesson: ${mockLesson.title}`);
+      console.log(`✅ Loaded lesson: ${mockLesson.title}`);
       return mockLesson;
     }
 
-    // Not found anywhere
     throw new Error(`Lesson with ID ${id} not found`);
   },
 

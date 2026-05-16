@@ -3,7 +3,6 @@ import {
   User,
   Mail,
   Lock,
-  Bell,
   Moon,
   Sun,
   Code,
@@ -15,7 +14,6 @@ import {
   Shield,
   Trash2,
   MessageSquare,
-  Zap,
   Smartphone,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,14 +32,6 @@ interface UserProfile {
   email: string;
   username: string;
   avatar: string;
-}
-
-interface PreferenceToggle {
-  id: string;
-  label: string;
-  description: string;
-  icon: React.ReactNode;
-  enabled: boolean;
 }
 
 interface SecurityOption {
@@ -79,9 +69,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
     skillLevel: "intermediate",
     favoriteLanguage: "javascript",
     learningGoal: "full-stack",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
   });
 
   const [theme, setTheme] = useState<"dark" | "light" | "system">(() => {
@@ -97,37 +84,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
     }
   });
   const [saveMessage, setSaveMessage] = useState<string>("");
-
-  const [preferences, setPreferences] = useState<PreferenceToggle[]>([
-    {
-      id: "dark-mode",
-      label: "Dark Mode",
-      description: "Use dark theme for the interface",
-      icon: <Moon className="w-5 h-5" />,
-      enabled: true,
-    },
-    {
-      id: "notifications",
-      label: "Notifications",
-      description: "Receive email and push notifications",
-      icon: <Bell className="w-5 h-5" />,
-      enabled: true,
-    },
-    {
-      id: "ai-suggestions",
-      label: "AI Suggestions",
-      description: "Get AI-powered code suggestions",
-      icon: <Zap className="w-5 h-5" />,
-      enabled: true,
-    },
-    {
-      id: "auto-save",
-      label: "Auto Save",
-      description: "Automatically save your progress",
-      icon: <Save className="w-5 h-5" />,
-      enabled: false,
-    },
-  ]);
 
   const securityOptions: SecurityOption[] = [
     {
@@ -152,14 +108,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
       danger: true,
     },
   ];
-
-  const togglePreference = (id: string) => {
-    setPreferences(
-      preferences.map((pref) =>
-        pref.id === id ? { ...pref, enabled: !pref.enabled } : pref,
-      ),
-    );
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -330,45 +278,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
               placeholder="your.email@example.com"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Current Password
-            </label>
-            <input
-              type="password"
-              name="currentPassword"
-              value={formData.currentPassword}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 rounded-lg bg-surface-elevated/50 border border-border/50 text-foreground placeholder-muted-foreground focus:outline-none focus:border-brand-primary/50 transition-colors"
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              New Password
-            </label>
-            <input
-              type="password"
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 rounded-lg bg-surface-elevated/50 border border-border/50 text-foreground placeholder-muted-foreground focus:outline-none focus:border-brand-primary/50 transition-colors"
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 rounded-lg bg-surface-elevated/50 border border-border/50 text-foreground placeholder-muted-foreground focus:outline-none focus:border-brand-primary/50 transition-colors"
-              placeholder="••••••••"
-            />
-          </div>
           {saveMessage && (
             <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
               {saveMessage}
@@ -381,50 +290,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
             <Save className="w-4 h-4" />
             Save Changes
           </Button>
-        </CardContent>
-      </Card>
-
-      {/* Section 3: Preferences */}
-      <Card className="border-border/50 bg-surface-elevated/30 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5" />
-            Preferences
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {preferences.map((pref) => (
-            <div
-              key={pref.id}
-              className="flex items-center justify-between p-4 rounded-lg bg-surface-elevated/50 border border-border/30 hover:border-border/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary">
-                  {pref.icon}
-                </div>
-                <div>
-                  <p className="font-medium">{pref.label}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {pref.description}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => togglePreference(pref.id)}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                  pref.enabled
-                    ? "bg-green-600/80 hover:bg-green-600"
-                    : "bg-surface-elevated/80 hover:bg-surface-elevated"
-                }`}
-              >
-                <span
-                  className={`inline-block h-6 w-6 rounded-full bg-white transition-transform ${
-                    pref.enabled ? "translate-x-7" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-          ))}
         </CardContent>
       </Card>
 

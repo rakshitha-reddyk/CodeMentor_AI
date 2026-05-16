@@ -62,7 +62,6 @@ const SettingsPage = () => {
   return (
     <div className="w-full flex-1 fade-in">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Settings</h1>
         <Settings user={user} onLogout={handleLogout} />
       </div>
     </div>
